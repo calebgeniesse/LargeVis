@@ -1,6 +1,10 @@
 #include "Python.h"
 #include "LargeVis.h"
 
+#if PY_MAJOR_VERSION >= 3
+#define IS_PY3K
+#endif
+
 real *out_vec;
 LargeVis model;
 char *filename;
@@ -94,7 +98,8 @@ static PyObject *LoadFromList(PyObject *self, PyObject *args)
 		}
 		for (long long j = 0; j < n_dim; ++j)
 		{
-			real x = atof(PyString_AsString(PyObject_Str(PyList_GetItem(vec, j))));
+		        // Python 3.* compatible 
+		        real x = atof(PyBytes_AS_STRING(PyUnicode_FromObject(PyList_GetItem(vec, j))));
 			data[ll + j] = x;
 		}
 	}
@@ -114,6 +119,7 @@ static PyObject *SaveToFile(PyObject *self, PyObject *args)
 	return Py_None;
 }
 
+/* Python 2 */
 static PyMethodDef PyExtMethods[] =
 {
 	{ "run", Run, METH_VARARGS, "(All arguments are optional.\nrun(output dimension, threads number, training samples, propagations number, learning rate, rp-trees number, negative samples number, neighbors number, gamma, perplexity)\nFire up LargeVis." },
@@ -124,8 +130,29 @@ static PyMethodDef PyExtMethods[] =
 	{ NULL, NULL, 0, NULL }
 };
 
+
+#ifdef IS_PY3K
+static struct PyModuleDef PyExtModuleDef = {
+  PyModuleDef_HEAD_INIT,
+  "LargeVis",
+  NULL,
+  -1,
+  PyExtMethods,
+  NULL,
+  NULL,
+  NULL,
+  NULL
+};
+
+PyMODINIT_FUNC PyInit_LargeVis(void)
+{
+  printf("LargeVis successfully imported!\n");
+  return PyModule_Create(&PyExtModuleDef);
+}
+#else
 PyMODINIT_FUNC initLargeVis()
 {
 	printf("LargeVis successfully imported!\n");
 	Py_InitModule("LargeVis", PyExtMethods);
 }
+#endif
