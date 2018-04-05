@@ -98,7 +98,7 @@ static PyObject *LoadFromList(PyObject *self, PyObject *args)
 		}
 		for (long long j = 0; j < n_dim; ++j)
 		{
-		        // Python 3.* compatible 
+		        // Python 3.x compatible 
 		        real x = atof(PyBytes_AS_STRING(PyUnicode_FromObject(PyList_GetItem(vec, j))));
 			data[ll + j] = x;
 		}
